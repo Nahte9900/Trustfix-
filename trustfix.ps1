@@ -65,13 +65,35 @@ function trustfix {
              Test-ComputerSecureChannel -repair -Credential $credentials
     }
 
+function check_group_membership {
+              $objSearcher = New-Object System.DirectoryServices.DirectorySearcher
+              $objSearcher.SearchRoot = New-Object System.DirectoryServices.DirectoryEntry
+              $objSearcher.Filter = "(&(objectCategory=Computer)(SamAccountname=$($env:COMPUTERNAME)`$))"
+              $objSearcher.SearchScope = "Subtree"
+              $obj = $objSearcher.FindOne()
+              $Computer = $obj.Properties["distinguishedname"]
+              $objSearcher.Filter = "(&(objectCategory=group)(SamAccountname=$installgrp))"
+              $objSearcher.SearchScope = "Subtree"
+              $obj = $objSearcher.FindOne()
+              [String[]]$Members = $obj.Properties["member"]
+        If ($Members -contains $Computer)
+    { 
+              #Remove the computer from the InstallPS3 group in AD                      
+              & net group $installgrp $env:computername$ /delete /domain
+              trustfix
+    }
+       Else
+    { 
+              trustfix
+    }
+                                }
 
 function eat_pie {
             #The script starts here. Look for pie.txt, if exists, run trustfix, if not, test for PS3
     $pie = test-path ("$path$file")
 
     if ($pie -eq $true) {
-                          trustfix
+                          check_group_membership
                                     }
     else {
           install_ps3

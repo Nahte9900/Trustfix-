@@ -18,11 +18,6 @@ $trustfixgrp = "FixTrust"
 $file = "pie.txt"
 $content = "All your base are belong to us!"
 
-
-
-
-
-
 function group_move {  
        
         #Add the computer to the FixTrust group in AD
